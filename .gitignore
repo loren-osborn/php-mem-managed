@@ -1,0 +1,15 @@
+*.swp
+*~
+.DS_Store
+.buildpath
+.cache/
+.idea
+.project
+.rvmrc
+.settings
+.vagrant
+Thumbs.db
+composer.phar
+project/test/report/
+project/vendor/
+tags
