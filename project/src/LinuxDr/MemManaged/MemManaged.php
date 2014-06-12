@@ -1,13 +1,15 @@
 <?php
 namespace LinuxDr\MemManaged;
 
+use Weakref;
+
 trait MemManaged {
 
 	private $referencedBy = null;
 
     private function __construct($argArray)
 	{
-		$this->referencedBy = $this->getCallersObject(1);
+		$this->referencedBy = new Weakref($this->getCallersObject(1));
 		call_user_func_array(array($this, 'init'), $argArray);
 	}
 
@@ -24,7 +26,7 @@ trait MemManaged {
 
 	public function newReference()
 	{
-		$this->referencedBy = $this->getCallersObject();
+		$this->referencedBy = new Weakref($this->getCallersObject());
 		return $this;
 	}
 
@@ -35,7 +37,7 @@ trait MemManaged {
 
 	public function getReferencingObject()
 	{
-		return $this->referencedBy;
+		return $this->referencedBy->get();
 	}
 
     private function getCallersObject($depth = 0)

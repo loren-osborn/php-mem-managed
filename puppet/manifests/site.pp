@@ -33,8 +33,19 @@ $phpModules = [ 'cli', 'intl']
 
 php::module { $phpModules: }
 
+package { "libpcre3-dev": } ->
+php::pecl::module { "Weakref":
+  use_package     => 'false',
+  preferred_state => 'beta'
+}
+-> php::pecl::module { "Xdebug": }
+
 php::ini { 'php':
-  value   => ['date.timezone = "America/Los_Angeles"', 'xdebug.max_nesting_level = 250' ],
+  value   => [
+    'date.timezone = "America/Los_Angeles"',
+    'xdebug.max_nesting_level = 250',
+    'extension=weakref.so'
+  ],
   target  => 'php.ini',
   service => 'apache'
 }
@@ -44,7 +55,7 @@ class composer {
         command => 'curl -s http://getcomposer.org/installer | php -- --install-dir=/usr/bin && mv /usr/bin/composer.phar /usr/bin/composer',
         creates => '/usr/bin/composer',
         environment => ["HOME=/home/vagrant", "COMPOSER_HOME=/home/vagrant"],
-        require => [Package['php5-cli'], Package['curl'], Php::Ini[php]],
+        require => [Package['php5-cli'], Package['curl'], Php::Ini[php], Php::Pecl::Module[Weakref]],
     }
 
     exec { 'composer self update':
