@@ -50,57 +50,48 @@ class MemManagedTest extends PHPUnit_Framework_TestCase
         $this->referencedObjects = array();
     }
 
-    private function addTrackedObject($obj)
+    public function tearDown()
     {
-        $this->referencedObjects[] = new Weakref($obj);
+        $this->verifyAllDeallocate();
     }
 
-    private function verifyAllDeallocated()
+    private function verifyAllDeallocate()
     {
-        foreach ($this->referencedObjects as $ref) {
-            $this->assertFalse($ref->valid(), $ref->valid() ? get_class($ref->get()) . " should have been deallocated." : '');
+        $weakRefs = array();
+        foreach ($this->referencedObjects as $key => $obj) {
+            $weakRefs[$key] = new Weakref($obj);
+        }
+        unset($obj);
+        $this->referencedObjects = null;
+        foreach ($weakRefs as $key => $ref) {
+            $this->assertFalse($ref->valid(), $ref->valid() ? get_class($ref->get()) . " ($key) should have been deallocated." : '');
         }
     }
 
     public function testClientCreation()
     {
-        $obj = MemManagedTest_SampleClientClass::create();
-        $this->assertEquals('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleClientClass', $obj->getClass());
-        $this->addTrackedObject($obj);
-        $obj = MemManagedTest_SampleDerivedClass::create();
-        $this->assertEquals('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleDerivedClass', $obj->getClass());
-        $this->assertEquals(array(5), $obj->getInitArgs());
-        $this->addTrackedObject($obj);
-        $obj = MemManagedTest_SampleDerivedClass::create(1, 2, 3);
-        $this->assertEquals('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleDerivedClass', $obj->getClass());
-        $this->assertEquals(array(1, 2, 3), $obj->getInitArgs());
-        $this->addTrackedObject($obj);
-        unset($obj);
-        $this->verifyAllDeallocated();
+        $this->referencedObjects['obj1'] = MemManagedTest_SampleClientClass::create();
+        $this->assertEquals('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleClientClass', $this->referencedObjects['obj1']->getClass());
+        $this->referencedObjects['obj2'] = MemManagedTest_SampleDerivedClass::create();
+        $this->assertEquals('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleDerivedClass', $this->referencedObjects['obj2']->getClass());
+        $this->assertEquals(array(5), $this->referencedObjects['obj2']->getInitArgs());
+        $this->referencedObjects['obj3'] = MemManagedTest_SampleDerivedClass::create(1, 2, 3);
+        $this->assertEquals('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleDerivedClass', $this->referencedObjects['obj3']->getClass());
+        $this->assertEquals(array(1, 2, 3), $this->referencedObjects['obj3']->getInitArgs());
     }
 
-    public function testGetReference()
+    public function testNewReference()
     {
-        $obj = MemManagedTest_SampleClientClass::create();
-        $this->addTrackedObject($obj);
-        $otherRef = $obj->newReference();
-        $this->addTrackedObject($otherRef);
-        $this->assertSame($obj->getReferencedObject(), $otherRef->getReferencedObject());
-        unset($obj);
-        unset($otherRef);
-        $this->verifyAllDeallocated();
+        $this->referencedObjects['obj'] = MemManagedTest_SampleClientClass::create();
+        $this->referencedObjects['otherRef'] = $this->referencedObjects['obj']->newReference();
+        $this->assertSame($this->referencedObjects['obj']->getReferencedObject(), $this->referencedObjects['otherRef']->getReferencedObject());
     }
 
     public function testGetReferencingObject()
     {
-        $obj = MemManagedTest_SampleClientClass::create();
-        $this->assertSame($obj->getReferencingObject(), $this);
-        $this->addTrackedObject($obj);
-        $otherObj = $obj->createAndAddReferenceTo('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleClientClass');
-        $this->assertSame($otherObj->getReferencingObject(), $obj);
-        $this->addTrackedObject($otherObj);
-        unset($otherObj);
-        unset($obj);
-        $this->verifyAllDeallocated();
+        $this->referencedObjects['obj'] = MemManagedTest_SampleClientClass::create();
+        $this->assertSame($this->referencedObjects['obj']->getReferencingObject(), $this);
+        $this->referencedObjects['otherObj'] = $this->referencedObjects['obj']->createAndAddReferenceTo('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleClientClass');
+        $this->assertSame($this->referencedObjects['otherObj']->getReferencingObject(), $this->referencedObjects['obj']);
     }
 }
