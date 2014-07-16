@@ -43,4 +43,14 @@ abstract class ObjectProxy
     {
         unset($this->getProxiedObject()->$propName);
     }
+
+    public function __call($method, $args)
+    {
+        return call_user_func_array(array($this->getProxiedObject(), $method), $args);
+    }
+
+    public function __invoke()
+    {
+        return call_user_func_array($this->getProxiedObject(), func_get_args());
+    }
 }

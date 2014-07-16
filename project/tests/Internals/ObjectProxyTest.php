@@ -77,6 +77,35 @@ class ObjectProxyTest extends PHPUnit_Framework_TestCase
         return array(array('foo'), array('bar'), array('baz'));
     }
 
+    public function getArgsAndRetVals()
+    {
+        $argLists = array(array(), array('asdf'), array(1, 3, 5, 7));
+        $valuesReturned = array(null, 4, 'some string');
+        $retVal = array();
+        foreach ($argLists as $args) {
+            foreach ($valuesReturned as $val) {
+                $retVal[] = array($args, $val);
+            }
+        }
+        return $retVal;
+    }
+
+    public function getMethodNamesArgsAndRetVals()
+    {
+        $METHOD_NAME_INDEX = 0;
+        $ARGS_INDEX = 0;
+        $RET_VAL_INDEX = 1;
+        $symbolNames = $this->getSymbolNames();
+        $argAndRetValPairs = $this->getArgsAndRetVals();
+        $retVal = array();
+        foreach ($symbolNames as $methodArray) {
+            foreach ($argAndRetValPairs as $pair) {
+                $retVal[] = array($methodArray[$METHOD_NAME_INDEX], $pair[$ARGS_INDEX], $pair[$RET_VAL_INDEX]);
+            }
+        }
+        return $retVal;
+    }
+
     /**
       * @dataProvider getSymbolNames
       */
@@ -94,5 +123,39 @@ class ObjectProxyTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(2.71828, $proxy->$propertyName);
         unset($proxy->$propertyName);
         $this->assertFalse(isset($proxy->$propertyName));
+    }
+
+    /**
+      * @dataProvider getMethodNamesArgsAndRetVals
+      */
+    public function testMethodAccess($methodName, $argList, $valToReturn)
+    {
+        $closureThis = $this;
+        $expectedArgs = array_map(function ($val) use ($closureThis) { return $closureThis->equalTo($val); }, $argList);
+        $mock = $this->getMock('SomeClass', array($methodName));
+        $method = $mock->expects($this->once())
+            ->method($methodName);
+        call_user_func_array(array($method, 'with'), $expectedArgs)
+            ->will($this->returnValue($valToReturn));
+        $proxy = ObjectProxyTest__SampleObjectProxy::create($mock);
+        $result = call_user_func_array(array($proxy, $methodName), $argList);
+        $this->assertEquals($valToReturn, $result);
+    }
+
+    /**
+      * @dataProvider getArgsAndRetVals
+      */
+    public function testInvoke($argList, $valToReturn)
+    {
+        $closureThis = $this;
+        $expectedArgs = array_map(function ($val) use ($closureThis) { return $closureThis->equalTo($val); }, $argList);
+        $mock = $this->getMock('SomeClass', array('__invoke'));
+        $method = $mock->expects($this->once())
+            ->method('__invoke');
+        call_user_func_array(array($method, 'with'), $expectedArgs)
+            ->will($this->returnValue($valToReturn));
+        $proxy = ObjectProxyTest__SampleObjectProxy::create($mock);
+        $result = call_user_func_array($proxy, $argList);
+        $this->assertEquals($valToReturn, $result);
     }
 }
