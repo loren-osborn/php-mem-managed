@@ -10,6 +10,6 @@
 .vagrant
 Thumbs.db
 composer.phar
-project/test/report/
-project/vendor/
+test/report/
+vendor/
 tags

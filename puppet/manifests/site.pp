@@ -67,14 +67,14 @@ class composer {
     exec { 'composer install':
         command => 'composer install',
         environment => ["HOME=/home/vagrant", "COMPOSER_HOME=/home/vagrant"],
-        cwd => "/vagrant/project",
+        cwd => "/vagrant",
         require => [Exec['composer self update'], Php::Ini[php]],
     }
 }
 
 class { 'composer': } -> file { '/usr/local/bin/phpunit':
    ensure => 'link',
-   target => '/vagrant/project/vendor/phpunit/phpunit/phpunit',
+   target => '/vagrant/vendor/phpunit/phpunit/phpunit',
 }
 
 file { "/home/vagrant/.bash_profile":
