@@ -42,7 +42,13 @@ trait MemManaged {
 
     private function getCallersObject($depth = 0)
     {
-        $backtrace = debug_backtrace((DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS), 3 + $depth);
+        $backtrace = debug_backtrace((DEBUG_BACKTRACE_PROVIDE_OBJECT | DEBUG_BACKTRACE_IGNORE_ARGS), 3 + $depth + 2);
+        // var_dump("Stack frame to use: " . (2 + $depth), array_map(function ($stackFrame) {
+        // 	if (array_key_exists('object', $stackFrame)) {
+        // 		$stackFrame['object'] = get_class($stackFrame['object']) . ' (' . spl_object_hash($stackFrame['object']) . ')';
+        // 	}
+        // 	return $stackFrame;
+        // }, $backtrace));
         return $backtrace[2 + $depth]['object'];
     }
 

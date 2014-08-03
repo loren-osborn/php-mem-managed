@@ -1,15 +1,35 @@
 <?php
 namespace LinuxDr\MemManaged\Internals;
 
+use ReflectionClass;
+
 abstract class ObjectProxy
 {
 	abstract public function getProxiedObject();
 
+    abstract protected static function getClassName();
+
     protected function init() {}
 
-    static public function create()
+    public static function create()
     {
-        $result = new static();
+        $staticClassName = get_called_class();
+        $targetClass = new ReflectionClass(call_user_func_array( $staticClassName . '::getClassName', func_get_args()));
+        $targetInterfaces = $targetClass->getInterfaces();
+        $proxyToInstantiate = $staticClassName;
+        if (false && count($targetInterfaces) > 0) {
+            $parentProxyClass = $proxyToInstantiate;
+            $interfaceList = array_keys($targetInterfaces);
+            sort($interfaceList, SORT_STRING);
+            $md5Input = $parentProxyClass . ':' . implode(',', $interfaceList);
+            $proxyClassSuffix = md5($md5Input, false);
+            // $proxyClassSuffix = md5($parentProxyClass . ':' . implode(',', $interfaceList), false);
+            $proxyToInstantiate = __NAMESPACE__ . '\\ObjectProxy\\DynamicallyGenerated\\ObjProxy_' . $proxyClassSuffix;
+            if (!class_exists($proxyToInstantiate, false)) {
+                throw new \Exception('TBD instantiating variant: ' . $md5Input);
+            }
+        }
+        $result = new $proxyToInstantiate();
         call_user_func_array( array($result, 'init'), func_get_args());
         return $result;
     }

@@ -94,4 +94,96 @@ class MemManagedTest extends PHPUnit_Framework_TestCase
         $this->referencedObjects['otherObj'] = $this->referencedObjects['obj']->createAndAddReferenceTo('LinuxDr\\MemManaged\\Tests\\MemManagedTest_SampleClientClass');
         $this->assertSame($this->referencedObjects['otherObj']->getReferencingObject(), $this->referencedObjects['obj']);
     }
+
+    /*
+    protected function setUp()
+    {
+        require_once(dirname(dirname(__FILE__)) . '/src/LinuxDr/CgmQuiz/AddBusinessDays.php');
+    }
+
+    public function getExpectedValues()
+    {
+        return array(
+            array( // given
+                'date' => '2013-08-29',
+                'holiday' => '2013-09-02',
+                'add' => 3,
+                'expected' => '2013-09-04'),
+            array( // weekday with no delta
+                'date' => '2013-08-29',
+                'holiday' => '2013-09-02',
+                'add' => 0,
+                'expected' => '2013-08-29'),
+            array( // weekday skip over a weekend
+                'date' => '2013-08-29',
+                'holiday' => '2013-09-02',
+                'add' => 1,
+                'expected' => '2013-08-30'),
+            array( // weekend with no delta
+                'date' => '2013-08-31',
+                'holiday' => '2013-10-02',
+                'add' => 0,
+                'expected' => '2013-09-02'),
+            array( // weekend becomes monday adding 1 day
+                'date' => '2013-08-31',
+                'holiday' => '2013-10-02',
+                'add' => 1,
+                'expected' => '2013-09-03'),
+            array( // few weeks ahead
+                'date' => '2013-08-31',
+                'holiday' => '2013-10-02',
+                'add' => 11,
+                'expected' => '2013-09-17'),
+            array( // few weeks backwards
+                'date' => '2013-08-31',
+                'holiday' => '2013-10-02',
+                'add' => -11,
+                'expected' => '2013-08-16'),
+            array( // holiday on weekend has no effect
+                'date' => '2013-08-29',
+                'holiday' => '2013-09-01',
+                'add' => 2,
+                'expected' => '2013-09-02'),
+            array( // holiday in past has no effect
+                'date' => '2013-08-29',
+                'holiday' => '2013-08-28',
+                'add' => 2,
+                'expected' => '2013-09-02'),
+            array( // holiday on Friday pushes us into the next week
+                'date' => '2013-08-29',
+                'holiday' => '2013-08-30',
+                'add' => 1,
+                'expected' => '2013-09-02'),
+            array( // holiday on Monday pushes us back to previous week
+                'date' => '2013-09-03',
+                'holiday' => '2013-09-02',
+                'add' => -1,
+                'expected' => '2013-08-30'),
+            array(
+                'date' => '2013-08-29',
+                'holiday' => '2013-09-02',
+                'add' => 2,
+                'expected' => '2013-09-03'),
+            array(
+                'date' => '2013-08-29',
+                'holiday' => '2013-08-28',
+                'add' => -1,
+                'expected' => '2013-08-27'),
+            array(
+                'date' => '2013-08-29',
+                'holiday' => '2013-08-28',
+                'add' => -3,
+                'expected' => '2013-08-23')
+        );
+    }
+
+    / **
+    * @dataProvider getExpectedValues
+    * /
+    public function testValues($date, $holiday, $add, $expected)
+    {
+        $result = \LinuxDr\CgmQuiz\addBusinessDays($date, $holiday, $add);
+        $this->assertEquals($expected, $result);
+    } 
+    */
 }

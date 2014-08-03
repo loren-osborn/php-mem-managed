@@ -5,6 +5,7 @@ use PHPUnit_Framework_TestCase;
 use LinuxDr\MemManaged\Internals\ObjectProxy;
 use ReflectionClass;
 use DateTime;
+use Iterator;
 
 class ObjectProxyTest__SampleObjectProxy extends ObjectProxy
 {
@@ -13,6 +14,12 @@ class ObjectProxyTest__SampleObjectProxy extends ObjectProxy
     public function getProxiedObject()
     {
         return $this->proxiedObject;
+    }
+
+    protected static function getClassName()
+    {
+        $argList = func_get_args();
+        return get_class($argList[0]);
     }
 
     protected function init($obj)
@@ -157,5 +164,30 @@ class ObjectProxyTest extends PHPUnit_Framework_TestCase
         $proxy = ObjectProxyTest__SampleObjectProxy::create($mock);
         $result = call_user_func_array($proxy, $argList);
         $this->assertEquals($valToReturn, $result);
+    }
+
+    public function testInterfaceMirroring()
+    {
+        /*
+         * "yeild" is new in PHP 5.5, but gives us a quick way to create an
+         * object implementing "Iterator"
+         */
+        $simpleGenFunc = (function () {
+            for ($i = 1; $i <= 3; $i++) {
+                yield $i;
+            }
+        });
+        $simpleGenerator = $simpleGenFunc();
+        $generatorConsumer = (function (Iterator $iter) {
+            $retVal = array();
+            foreach ($iter as $val) {
+                $retVal[] = $val;
+            }
+            return $retVal;
+        });
+        $proxy = ObjectProxyTest__SampleObjectProxy::create($simpleGenerator);
+        $this->markTestSkipped('Not yet implemented');
+        $result = $generatorConsumer($proxy);
+        $this->assertEquals(array(1, 2, 3), $result);
     }
 }
